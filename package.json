@@ -1,37 +1,16 @@
 {
-  "name": "radix-64",
-  "version": "1.0.4",
+  "name": "radix64",
+  "version": "1.0.0",
   "description": "Fast and efficient number conversion library for arbitrary radix 64 alphabets.",
-  "main": "index.js",
+  "main": "./dist/index.js",
   "scripts": {
-    "test": "mocha test/*.js"
+    "dev": "nodemon --exec ts-node ./test.ts"
   },
-  "repository": "http://github.com/amosyuen/radix64.git",
-  "author": {
-    "name": "Amos Yuen",
-    "email": "",
-    "url": "http://www.amosyuen.com"
-  },
-  "keywords": [
-    "base",
-    "base64",
-    "big",
-    "bigint",
-    "bignum",
-    "convert",
-    "encode",
-    "decode",
-    "int",
-    "integer",
-    "lexicographic",
-    "precision",
-    "radix",
-    "radix64"
-  ],
   "license": "Apache License 2.0",
   "devDependencies": {
-    "bignum": "^0.9.2",
-    "mocha": "*",
-    "should": ">=0.0.1"
+    "@types/node": "^18.0.0",
+    "nodemon": "^2.0.16",
+    "ts-node": "^10.8.1",
+    "typescript": "^4.7.4"
   }
 }

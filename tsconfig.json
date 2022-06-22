@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "outDir": "./dist",
+    "target": "ES2016",
+    "module": "commonjs",
+    "moduleResolution": "Node",
+    "sourceMap": true,
+    "lib": ["es2016"],
+    "paths": {
+      "@/*": ["/src/*"],
+      "~/*": ["/src/*"]
+    },
+    "noImplicitAny": false,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "strict": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "declaration": true
+  },
+  "include": ["./**/*.ts"],
+  "exclude": ["node_modules", "**/*.spec.ts"],
+  "typeRoots": ["./node_modules/@types"],
+  "types": ["@types/node"],
+  "license": "MIT"
+}

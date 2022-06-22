@@ -1,45 +1,43 @@
-'use strict';
-
-var BASE = 64;
-var BASE_BITS = 6;
+const BASE = 64;
+const BASE_BITS = 6;
 
 // Use URL safe characters in lexicographically sorted order
-var LEXICOGRAPHICAL_BASE64_URL = '-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz'
-  .split('').sort().join('');
+const LEXICOGRAPHICAL_BASE64_URL =
+  "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz".split("").sort().join("");
 
-module.exports = function (alphabet) {
+export default (alphabet: string = LEXICOGRAPHICAL_BASE64_URL) => {
   alphabet = alphabet || LEXICOGRAPHICAL_BASE64_URL;
   if (alphabet.length !== BASE) {
-    throw new Error('alphabet must be ' + BASE + ' characters long!');
+    throw new Error("alphabet must be " + BASE + " characters long!");
   }
 
-  var charToDec = {};
-  for (var i = 0; i < alphabet.length; i++) {
-    var char = alphabet[i];
+  let charToDec = {};
+  for (let i = 0; i < alphabet.length; i++) {
+    let char = alphabet[i];
     if (char in charToDec) {
-      throw new Error('alphabet has duplicate characters!');
+      throw new Error("alphabet has duplicate characters!");
     }
     charToDec[char] = i;
   }
 
-  function encodeBuffer(buffer, length) {
-    length = length || Math.ceil(buffer.length * 8 / 6);
-    var chars = new Array(length);
+  function encodeBuffer(buffer: Buffer, length?: number): string {
+    length = length || Math.ceil((buffer.length * 8) / 6);
+    let chars = new Array(length);
 
-    var i = 1; // start at 1 to avoid subtracting by 1
-    var bufferIndex = buffer.length - 1;
-    var hang = 0;
+    let i = 1; // start at 1 to avoid subtracting by 1
+    let bufferIndex = buffer.length - 1;
+    let hang = 0;
     do {
-      var bufferByte;
+      let bufferByte;
       switch (i % 4) {
         case 1:
           bufferByte = buffer[bufferIndex--];
-          chars[chars.length - i] = alphabet[bufferByte & 0x3F];
+          chars[chars.length - i] = alphabet[bufferByte & 0x3f];
           hang = bufferByte >> 6;
           break;
         case 2:
           bufferByte = buffer[bufferIndex--];
-          chars[chars.length - i] = alphabet[((bufferByte & 0x0F) << 2) | hang];
+          chars[chars.length - i] = alphabet[((bufferByte & 0x0f) << 2) | hang];
           hang = bufferByte >> 4;
           break;
         case 3:
@@ -54,7 +52,7 @@ module.exports = function (alphabet) {
       i++;
     } while (bufferIndex >= 0 && i <= chars.length);
 
-    if ((i % 4 ) !== 1) {
+    if (i % 4 !== 1) {
       chars[chars.length - i] = alphabet[hang];
       i++;
     }
@@ -63,25 +61,33 @@ module.exports = function (alphabet) {
       i++;
     }
 
-    return chars.join(''); 
+    return chars.join("");
   }
 
-  function encodeInt(num, length) {
+  function encodeInt(num: number, length?: number): string {
     if (length) {
-      var bounds = Math.pow(2, 6 * length);
+      let bounds = Math.pow(2, 6 * length);
       if (num >= bounds) {
-        throw new Error('Int (' + num + ') is greater than or equal to max bound (' + bounds + ') for encoded string length (' + length + ')');
+        throw new Error(
+          "Int (" +
+            num +
+            ") is greater than or equal to max bound (" +
+            bounds +
+            ") for encoded string length (" +
+            length +
+            ")"
+        );
       }
     } else {
-      var log = Math.log2(num);
+      let log = Math.log2(num);
       if (Math.pow(2, Math.round(log)) === num) {
         log++;
       }
       length = Math.max(1, Math.ceil(log / BASE_BITS));
     }
 
-    var chars = new Array(length);
-    var i = chars.length - 1;
+    let chars = new Array(length);
+    let i = chars.length - 1;
     while (num > 0) {
       chars[i--] = alphabet[num % BASE];
       num = Math.floor(num / BASE);
@@ -89,15 +95,15 @@ module.exports = function (alphabet) {
     while (i >= 0) {
       chars[i--] = alphabet[0];
     }
-    return chars.join('');
+    return chars.join("");
   }
 
-  function decodeToBuffer(string, bytes) {
-    var i = 1; // start at 1 to avoid subtracting by 1
-    var buffer = new Buffer(bytes || Math.ceil(string.length * BASE_BITS / 8));
-    var bufferIndex = buffer.length - 1;
+  function decodeToBuffer(string: string, bytes?) {
+    let i = 1; // start at 1 to avoid subtracting by 1
+    let buffer = new Buffer(bytes || Math.ceil((string.length * BASE_BITS) / 8));
+    let bufferIndex = buffer.length - 1;
     do {
-      var dec = charToDec[string[string.length - i]];
+      let dec = charToDec[string[string.length - i]];
       switch (i % 4) {
         case 1:
           buffer[bufferIndex] = dec;
@@ -107,7 +113,7 @@ module.exports = function (alphabet) {
           buffer[bufferIndex] = dec >> 2;
           break;
         case 3:
-          buffer[bufferIndex--] |= (dec & 0xF) << 4;
+          buffer[bufferIndex--] |= (dec & 0xf) << 4;
           buffer[bufferIndex] = dec >> 4;
           break;
         case 0:
@@ -127,11 +133,11 @@ module.exports = function (alphabet) {
     return buffer;
   }
 
-  function decodeToInt(string) {
-    var i = 0;
-    var num = 0;
+  function decodeToInt(string: string) {
+    let i = 0;
+    let num = 0;
     do {
-      num = num * BASE + charToDec[string[i]]; 
+      num = num * BASE + charToDec[string[i]];
       i++;
     } while (i < string.length);
 
