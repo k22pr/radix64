@@ -1,19 +1,32 @@
 const BASE = 64;
 const BASE_BITS = 6;
 
-// Use URL safe characters in lexicographically sorted order
+// URL safe, lexicographically sorted base64
 const LEXICOGRAPHICAL_BASE64_URL =
-  "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz".split("").sort().join("");
+  "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz"
+    .split("")
+    .sort()
+    .join("");
 
-export default (alphabet: string = LEXICOGRAPHICAL_BASE64_URL) => {
-  alphabet = alphabet || LEXICOGRAPHICAL_BASE64_URL;
+type AlphabetMap = { [char: string]: number };
+
+export interface Base64Toolkit {
+  encodeBuffer(buffer: Buffer, length?: number): string;
+  encodeInt(num: number, length?: number): string;
+  decodeToBuffer(string: string, bytes?: number): Buffer;
+  decodeToInt(string: string): number;
+}
+
+export default function createBase64Toolkit(
+  alphabet: string = LEXICOGRAPHICAL_BASE64_URL
+): Base64Toolkit {
   if (alphabet.length !== BASE) {
     throw new Error("alphabet must be " + BASE + " characters long!");
   }
 
-  let charToDec = {};
+  const charToDec: AlphabetMap = {};
   for (let i = 0; i < alphabet.length; i++) {
-    let char = alphabet[i];
+    const char = alphabet[i];
     if (char in charToDec) {
       throw new Error("alphabet has duplicate characters!");
     }
@@ -22,13 +35,13 @@ export default (alphabet: string = LEXICOGRAPHICAL_BASE64_URL) => {
 
   function encodeBuffer(buffer: Buffer, length?: number): string {
     length = length || Math.ceil((buffer.length * 8) / 6);
-    let chars = new Array(length);
+    const chars = new Array<string>(length);
 
-    let i = 1; // start at 1 to avoid subtracting by 1
+    let i = 1;
     let bufferIndex = buffer.length - 1;
     let hang = 0;
     do {
-      let bufferByte;
+      let bufferByte: number = 0;
       switch (i % 4) {
         case 1:
           bufferByte = buffer[bufferIndex--];
@@ -66,16 +79,10 @@ export default (alphabet: string = LEXICOGRAPHICAL_BASE64_URL) => {
 
   function encodeInt(num: number, length?: number): string {
     if (length) {
-      let bounds = Math.pow(2, 6 * length);
+      const bounds = Math.pow(2, 6 * length);
       if (num >= bounds) {
         throw new Error(
-          "Int (" +
-            num +
-            ") is greater than or equal to max bound (" +
-            bounds +
-            ") for encoded string length (" +
-            length +
-            ")"
+          `Int (${num}) is greater than or equal to max bound (${bounds}) for encoded string length (${length})`
         );
       }
     } else {
@@ -86,7 +93,7 @@ export default (alphabet: string = LEXICOGRAPHICAL_BASE64_URL) => {
       length = Math.max(1, Math.ceil(log / BASE_BITS));
     }
 
-    let chars = new Array(length);
+    const chars = new Array<string>(length);
     let i = chars.length - 1;
     while (num > 0) {
       chars[i--] = alphabet[num % BASE];
@@ -98,12 +105,14 @@ export default (alphabet: string = LEXICOGRAPHICAL_BASE64_URL) => {
     return chars.join("");
   }
 
-  function decodeToBuffer(string: string, bytes?) {
-    let i = 1; // start at 1 to avoid subtracting by 1
-    let buffer = new Buffer(bytes || Math.ceil((string.length * BASE_BITS) / 8));
+  function decodeToBuffer(string: string, bytes?: number): Buffer {
+    let i = 1;
+    const buffer = Buffer.alloc(
+      bytes || Math.ceil((string.length * BASE_BITS) / 8)
+    );
     let bufferIndex = buffer.length - 1;
     do {
-      let dec = charToDec[string[string.length - i]];
+      const dec = charToDec[string[string.length - i]];
       switch (i % 4) {
         case 1:
           buffer[bufferIndex] = dec;
@@ -133,7 +142,7 @@ export default (alphabet: string = LEXICOGRAPHICAL_BASE64_URL) => {
     return buffer;
   }
 
-  function decodeToInt(string: string) {
+  function decodeToInt(string: string): number {
     let i = 0;
     let num = 0;
     do {
@@ -145,9 +154,9 @@ export default (alphabet: string = LEXICOGRAPHICAL_BASE64_URL) => {
   }
 
   return {
-    encodeBuffer: encodeBuffer,
-    encodeInt: encodeInt,
-    decodeToBuffer: decodeToBuffer,
-    decodeToInt: decodeToInt,
+    encodeBuffer,
+    encodeInt,
+    decodeToBuffer,
+    decodeToInt,
   };
-};
+}
